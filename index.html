@@ -159,10 +159,9 @@
 
 				timeout = setTimeout( function () {
 
-					editor.takeSnapshot();
 					editor.config.setKey( 'state', editor.toMarkdown() );
 
-				}, 500 );
+				}, 1000 );
 
 			}
 
@@ -180,15 +179,7 @@
 
 			if ( state !== undefined ) {
 
-				editor.fromMarkdown( state ).then( () => {
-
-					editor.takeSnapshot();
-
-				} );
-
-			} else {
-
-				editor.takeSnapshot();
+				editor.fromMarkdown( state );
 
 			}
 
@@ -208,18 +199,6 @@
 						case 69: // CMD + E to export
 							event.preventDefault();
 							signals.exportState.dispatch();
-							break;
-						case 90: // CMD + Z for undo
-							event.preventDefault();
-							if ( event.shiftKey ) {
-								editor.redo();
-							} else {
-								editor.undo();
-							}
-							break;
-						case 89: // CMD + Y for redo
-							event.preventDefault();
-							editor.redo();
 							break;
 					}
 

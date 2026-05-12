@@ -72,22 +72,13 @@ function Editor() {
 		// timeline views
 		showAnimations: new Signal(),
 		showCurves: new Signal(),
-		parameterSelected: new Signal(),
-
-		// history
-		historyChanged: new Signal()
+		parameterSelected: new Signal()
 
 	};
 
 	this.config = new Config();
 	this.frame = new Frame();
 	this.selected = null;
-
-	this.history = {
-		undoStack: [],
-		redoStack: [],
-		isUndoingRedoing: false
-	};
 
 	// signals
 
@@ -122,14 +113,6 @@ function Editor() {
 	this.signals.timeChanged.add( updateTimeline );
 	this.signals.windowResized.add( updateTimeline ); // TODO: Doesn't render?
 
-	this.signals.projectLoaded.add( () => {
-
-		this.history.undoStack = [];
-		this.history.redoStack = [];
-		this.signals.historyChanged.dispatch();
-
-	} );
-
 	// Animate
 
 	var prevTime = 0;
@@ -155,70 +138,6 @@ function Editor() {
 };
 
 Editor.prototype = {
-
-	takeSnapshot: function () {
-
-		if ( this.history.isUndoingRedoing ) return;
-
-		const state = this.toMarkdown();
-
-		if ( this.history.undoStack.length > 0 && this.history.undoStack[ this.history.undoStack.length - 1 ] === state ) {
-
-			return;
-
-		}
-
-		this.history.undoStack.push( state );
-		this.history.redoStack = [];
-
-		if ( this.history.undoStack.length > 100 ) {
-
-			this.history.undoStack.shift();
-
-		}
-
-		this.signals.historyChanged.dispatch();
-
-	},
-
-	undo: function () {
-
-		if ( this.history.undoStack.length < 2 ) return;
-
-		this.history.isUndoingRedoing = true;
-
-		const currentState = this.toMarkdown();
-		this.history.redoStack.push( currentState );
-
-		this.history.undoStack.pop(); // Remove current state
-		const previousState = this.history.undoStack[ this.history.undoStack.length - 1 ];
-
-		this.fromMarkdown( previousState ).then( () => {
-
-			this.history.isUndoingRedoing = false;
-			this.signals.historyChanged.dispatch();
-
-		} );
-
-	},
-
-	redo: function () {
-
-		if ( this.history.redoStack.length === 0 ) return;
-
-		this.history.isUndoingRedoing = true;
-
-		const nextState = this.history.redoStack.pop();
-		this.history.undoStack.push( nextState );
-
-		this.fromMarkdown( nextState ).then( () => {
-
-			this.history.isUndoingRedoing = false;
-			this.signals.historyChanged.dispatch();
-
-		} );
-
-	},
 
 	play: function () {
 
