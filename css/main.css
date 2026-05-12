@@ -1,14 +1,16 @@
 body {
-	background-color: #333;
-	font-family: Arial, sans-serif;
-	font-size: 14px;
+	background-color: #222;
+	font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+	font-size: 13px;
 	margin: 0;
 	overflow: hidden;
+	color: #eee;
 }
 
 hr {
 	border: 0px;
-	border-top: 1px solid #ccc;
+	border-top: 1px solid #444;
+	margin: 15px 0;
 }
 
 textarea, input { outline: none; } /* osx */
@@ -24,18 +26,19 @@ textarea, input { outline: none; } /* osx */
 }
 
 button {
-	font-size: 12px;
-	padding: 4px 6px;
-	border-radius: 4px;
+	font-size: 11px;
+	padding: 5px 10px;
+	border-radius: 3px;
+	transition: background-color 0.2s;
 }
 
 input.Input {
 	color: #3AC785;
 	font-size: 12px;
-	background-color: #444;
-	border: 0px;
+	background-color: #333;
+	border: 1px solid #444;
 	padding: 5px 8px;
-	border-radius: 4px;
+	border-radius: 3px;
 }
 
 input.Number {

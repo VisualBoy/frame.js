@@ -20,6 +20,43 @@ function MenubarEdit( editor ) {
 	options.setClass( 'options' );
 	container.add( options );
 
+	// undo
+
+	var undo = new UIPanel();
+	undo.setClass( 'option' );
+	undo.setTextContent( 'Undo' );
+	undo.addClass( 'inactive' );
+	undo.onClick( function () {
+
+		editor.undo();
+
+	} );
+	options.add( undo );
+
+	// redo
+
+	var redo = new UIPanel();
+	redo.setClass( 'option' );
+	redo.setTextContent( 'Redo' );
+	redo.addClass( 'inactive' );
+	redo.onClick( function () {
+
+		editor.redo();
+
+	} );
+	options.add( redo );
+
+	options.add( new UIPanel().setClass( 'divider' ) );
+
+	editor.signals.historyChanged.add( function () {
+
+		const history = editor.history;
+
+		history.undoStack.length > 1 ? undo.removeClass( 'inactive' ) : undo.addClass( 'inactive' );
+		history.redoStack.length > 0 ? redo.removeClass( 'inactive' ) : redo.addClass( 'inactive' );
+
+	} );
+
 	// duplicate
 
 	var option = new UIPanel();

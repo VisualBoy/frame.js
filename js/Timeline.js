@@ -44,15 +44,33 @@ function Timeline( editor ) {
 
 		event.preventDefault();
 
+		var initialX = event.offsetX;
+		var initialScale = scale;
+		var isZooming = false;
+
 		function onMouseMove( event ) {
 
-			editor.setTime( ( event.offsetX + scroller.scrollLeft ) / scale );
+			if ( event.shiftKey ) {
+
+				isZooming = true;
+				var delta = event.offsetX - initialX;
+				var newScale = Math.max( 10, initialScale + delta );
+				scale = newScale;
+				signals.timelineZoomed.dispatch( newScale );
+
+			} else {
+
+				editor.setTime( ( event.offsetX + scroller.scrollLeft ) / scale );
+
+			}
 
 		}
 
 		function onMouseUp( event ) {
 
-			onMouseMove( event );
+			if ( !isZooming ) {
+				onMouseMove( event );
+			}
 
 			document.removeEventListener( 'mousemove', onMouseMove );
 			document.removeEventListener( 'mouseup', onMouseUp );
@@ -128,6 +146,30 @@ function Timeline( editor ) {
 		updateTimeMark();
 
 	}, false );
+
+	scroller.addEventListener( 'wheel', function ( event ) {
+
+		if ( event.ctrlKey || event.metaKey ) {
+
+			event.preventDefault();
+
+			var delta = event.deltaY;
+			var newScale = Math.max( 10, scale - delta / 10 );
+			scale = newScale;
+
+			// Zoom relative to mouse position
+			var rect = scroller.getBoundingClientRect();
+			var x = event.clientX - rect.left;
+			var timeAtMouse = ( x + scroller.scrollLeft ) / scale;
+
+			signals.timelineZoomed.dispatch( newScale );
+
+			scroller.scrollLeft = timeAtMouse * scale - x;
+
+		}
+
+	}, { passive: false } );
+
 	timeline.dom.appendChild( scroller );
 
 	var elements = new TimelineAnimations( editor );

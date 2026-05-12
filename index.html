@@ -60,6 +60,82 @@
 			var menubar = new Menubar( editor );
 			document.body.appendChild( menubar.dom );
 
+			// Resizers
+
+			var resizerH = document.createElement( 'div' );
+			resizerH.className = 'resizer-h';
+			document.body.appendChild( resizerH );
+
+			resizerH.addEventListener( 'mousedown', function ( event ) {
+
+				event.preventDefault();
+
+				function onMouseMove( event ) {
+
+					var width = window.innerWidth - event.clientX;
+					width = Math.max( 200, Math.min( 600, width ) );
+
+					sidebar.dom.style.width = width + 'px';
+					resizerH.style.right = width + 'px';
+
+					viewport.dom.style.right = width + 'px';
+					code.dom.style.right = width + 'px';
+					controls.dom.style.right = width + 'px';
+					timeline.dom.style.right = width + 'px';
+					resizerV.style.right = width + 'px';
+
+					signals.windowResized.dispatch();
+
+				}
+
+				function onMouseUp() {
+
+					document.removeEventListener( 'mousemove', onMouseMove );
+					document.removeEventListener( 'mouseup', onMouseUp );
+
+				}
+
+				document.addEventListener( 'mousemove', onMouseMove );
+				document.addEventListener( 'mouseup', onMouseUp );
+
+			} );
+
+			var resizerV = document.createElement( 'div' );
+			resizerV.className = 'resizer-v';
+			document.body.appendChild( resizerV );
+
+			resizerV.addEventListener( 'mousedown', function ( event ) {
+
+				event.preventDefault();
+
+				function onMouseMove( event ) {
+
+					var height = window.innerHeight - event.clientY;
+					height = Math.max( 100, Math.min( window.innerHeight - 100, height ) );
+
+					timeline.dom.style.height = height + 'px';
+					resizerV.style.bottom = height + 'px';
+
+					viewport.dom.style.bottom = ( height + 32 ) + 'px';
+					code.dom.style.bottom = ( height + 32 ) + 'px';
+					controls.dom.style.bottom = height + 'px';
+
+					signals.windowResized.dispatch();
+
+				}
+
+				function onMouseUp() {
+
+					document.removeEventListener( 'mousemove', onMouseMove );
+					document.removeEventListener( 'mouseup', onMouseUp );
+
+				}
+
+				document.addEventListener( 'mousemove', onMouseMove );
+				document.addEventListener( 'mouseup', onMouseUp );
+
+			} );
+
 			// LocalStorage
 
 			editor.signals.nameChanged.add( saveState );
@@ -83,9 +159,10 @@
 
 				timeout = setTimeout( function () {
 
+					editor.takeSnapshot();
 					editor.config.setKey( 'state', editor.toMarkdown() );
 
-				}, 1000 );
+				}, 500 );
 
 			}
 
@@ -103,7 +180,15 @@
 
 			if ( state !== undefined ) {
 
-				editor.fromMarkdown( state );
+				editor.fromMarkdown( state ).then( () => {
+
+					editor.takeSnapshot();
+
+				} );
+
+			} else {
+
+				editor.takeSnapshot();
 
 			}
 
@@ -123,6 +208,18 @@
 						case 69: // CMD + E to export
 							event.preventDefault();
 							signals.exportState.dispatch();
+							break;
+						case 90: // CMD + Z for undo
+							event.preventDefault();
+							if ( event.shiftKey ) {
+								editor.redo();
+							} else {
+								editor.undo();
+							}
+							break;
+						case 89: // CMD + Y for redo
+							event.preventDefault();
+							editor.redo();
 							break;
 					}
 

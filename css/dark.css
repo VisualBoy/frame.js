@@ -7,20 +7,24 @@
 }
 
 button {
-	color: #555;
-	background-color: #888;
-	border: 0px;
+	color: #ccc;
+	background-color: #444;
+	border: 1px solid #555;
 	text-transform: uppercase;
 	cursor: pointer;
 	outline: none;
+	font-weight: bold;
 }
 
 	button:hover {
-		background-color: #999;
+		background-color: #555;
+		color: #fff;
 	}
 
 	button.selected {
 		background-color: #08f;
+		border-color: #0af;
+		color: #fff;
 	}
 
 /* UI */
@@ -28,37 +32,39 @@ button {
 #viewport {
 	position: absolute;
 	top: 32px;
-	bottom: calc(30% + 32px);
+	bottom: 300px; /* modified by resizer */
 	left: 0px;
-	right: 300px;
+	right: 300px; /* modified by resizer */
 	background-color: #000;
 }
 
 #effect {
 	position: absolute;
 	top: 32px;
-	bottom: calc(30% + 32px);
+	bottom: 300px; /* modified by resizer */
 	left: 0px;
-	right: 300px;
+	right: 300px; /* modified by resizer */
 	opacity: 0.9;
 }
 
 #controls {
 	position: absolute;
-	background-color: #666;
-	top: calc(70% - 32px);
+	background-color: #333;
+	border-top: 1px solid #444;
+	bottom: 268px; /* modified by resizer */
 	left: 0px;
-	right: 300px;
+	right: 300px; /* modified by resizer */
 	height: 32px;
 }
 
 #timeline {
 	position: absolute;
-	top: 70%;
+	bottom: 0px;
 	left: 0px;
-	right: 300px;
-	height: 30%;
-	background-color: #444;
+	right: 300px; /* modified by resizer */
+	height: 268px; /* modified by resizer */
+	background-color: #222;
+	border-top: 1px solid #444;
 }
 
 	#timeline .block {
@@ -99,11 +105,13 @@ button {
 	position: absolute;
 	width: 100%;
 	height: 32px;
-	background: #444;
+	background: #333;
+	border-bottom: 1px solid #444;
 	padding: 0;
 	margin: 0;
 	right: 0;
 	top: 0;
+	z-index: 1100;
 }
 
 	#menubar .menu {
@@ -171,9 +179,40 @@ button {
 	top: 32px;
 	bottom: 0px;
 	width: 300px;
-	color: #888;
-	background-color: #555;
+	color: #bbb;
+	background-color: #2a2a2a;
+	border-left: 1px solid #444;
 	overflow: auto;
+}
+
+.resizer-h {
+	position: absolute;
+	right: 300px;
+	top: 32px;
+	bottom: 0px;
+	width: 4px;
+	cursor: col-resize;
+	background-color: transparent;
+	z-index: 1000;
+}
+
+.resizer-h:hover {
+	background-color: rgba(255, 255, 255, 0.1);
+}
+
+.resizer-v {
+	position: absolute;
+	bottom: 268px;
+	left: 0px;
+	right: 300px;
+	height: 4px;
+	cursor: row-resize;
+	background-color: transparent;
+	z-index: 1000;
+}
+
+.resizer-v:hover {
+	background-color: rgba(255, 255, 255, 0.1);
 }
 
 	#sidebar * {

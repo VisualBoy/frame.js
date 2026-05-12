@@ -9,6 +9,9 @@ function TimelineCurves( editor ) {
 	var container = new UIPanel();
 	var interpolationType = 'catmull'; // Default interpolation type
 
+	var currentAnimation = null;
+	var currentParameter = null;
+
 	// Add close button
 	var closeButton = document.createElement('button');
 	closeButton.textContent = '×';  // Using × symbol for close
@@ -87,6 +90,9 @@ function TimelineCurves( editor ) {
 		
 		// Sort points by x position
 		controlPoints.sort((a, b) => a.x - b.x);
+
+		updateAnimationCurves();
+
 		return newPoint;
 	}
 
@@ -151,16 +157,32 @@ function TimelineCurves( editor ) {
 
 	function deleteControlPoint(point) {
 		// Don't delete if we only have 2 or fewer points
-		if (controlPoints.length <= 2) return;
+		// if (controlPoints.length <= 2) return;
 		
 		// Don't delete first or last point
 		var index = controlPoints.indexOf(point);
-		if (index === 0 || index === controlPoints.length - 1) return;
+		// if (index === 0 || index === controlPoints.length - 1) return;
 		
 		// Remove the point
 		controlPoints.splice(index, 1);
 		pointsGroup.removeChild(point.element);
 		drawSpline();
+		updateAnimationCurves();
+	}
+
+	function updateAnimationCurves() {
+
+		if ( !currentAnimation || !currentParameter ) return;
+
+		const curve = controlPoints.map( p => ( {
+			time: p.x / 2048,
+			value: ( 128 - p.y ) / 128, // Normalize to 0-1 or similar
+			type: interpolationType
+		} ) );
+
+		currentAnimation.curves[ currentParameter ] = curve;
+		editor.signals.animationModified.dispatch( currentAnimation );
+
 	}
 
 	svg.addEventListener( 'pointerdown', function(event) {
@@ -197,6 +219,7 @@ function TimelineCurves( editor ) {
 		selectedPoint.element.setAttribute('cy', constrained.y);
 		
 		drawSpline();
+		updateAnimationCurves();
 	} );
 
 	svg.addEventListener( 'pointerup', function(event) {
@@ -234,6 +257,44 @@ function TimelineCurves( editor ) {
 
 	editor.signals.timelineZoomed.add( function() {
 		drawSpline();
+	} );
+
+	editor.signals.parameterSelected.add( function ( animation, parameter ) {
+
+		currentAnimation = animation;
+		currentParameter = parameter;
+
+		// Clear existing points
+		while ( controlPoints.length ) {
+			var p = controlPoints.pop();
+			pointsGroup.removeChild( p.element );
+		}
+
+		// Load points from animation
+		const curve = animation.curves[ parameter ];
+
+		if ( curve ) {
+
+			curve.forEach( p => {
+
+				var point = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+				var x = p.time * 2048;
+				var y = 128 - ( p.value * 128 );
+				point.setAttribute('cx', x);
+				point.setAttribute('cy', y);
+				point.setAttribute('r', pointRadius);
+				point.setAttribute('fill', '#9370db');
+				point.setAttribute('cursor', 'pointer');
+				pointsGroup.appendChild(point);
+
+				controlPoints.push({ x, y, element: point });
+
+			} );
+
+		}
+
+		drawSpline();
+
 	} );
 
 	return container;
