@@ -94,7 +94,8 @@ function Controls( editor ) {
 
 	function updatePlaybackRate() {
 
-		playbackRateText.setValue( player.playbackRate.toFixed( 1 ) + 'x' );
+		var rate = player.playbackRate || 0;
+		playbackRateText.setValue( rate.toFixed( 1 ) + 'x' );
 
 	}
 

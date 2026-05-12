@@ -67,14 +67,20 @@ function Timeline( editor ) {
 
 	function updateMarks() {
 
-		canvas.width = scroller.clientWidth * devicePixelRatio;
-		canvas.style.width = scroller.clientWidth + 'px';
+		var width = scroller.clientWidth;
+		var height = 32;
+
+		canvas.width = width * devicePixelRatio;
+		canvas.height = height * devicePixelRatio;
+		canvas.style.width = width + 'px';
+		canvas.style.height = height + 'px';
 
 		var context = canvas.getContext( '2d', { alpha: false } );
+		context.setTransform( 1, 0, 0, 1, 0, 0 );
 		context.scale( devicePixelRatio, devicePixelRatio );
 
 		context.fillStyle = '#555';
-		context.fillRect( 0, 0, canvas.width, canvas.height );
+		context.fillRect( 0, 0, width, height );
 
 		context.strokeStyle = '#888';
 		context.beginPath();
@@ -82,10 +88,10 @@ function Timeline( editor ) {
 		context.translate( - scroller.scrollLeft, 0 );
 
 		var duration = frame.duration;
-		var width = duration * scale;
+		var timelineWidth = duration * scale;
 		var scale4 = scale / 4;
 
-		for ( var i = 0.5; i <= width; i += scale ) {
+		for ( var i = 0.5; i <= timelineWidth; i += scale ) {
 
 			context.moveTo( i + ( scale4 * 0 ), 18 ); context.lineTo( i + ( scale4 * 0 ), 26 );
 

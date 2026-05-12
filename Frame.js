@@ -415,7 +415,8 @@ function Timeline() {
 
 							if ( curve !== undefined && curve.length > 0 ) {
 
-								const progress = ( time - animation.start ) / ( animation.end - animation.start );
+								const duration = animation.end - animation.start;
+								const progress = duration > 0 ? ( time - animation.start ) / duration : 0;
 								programParameter.value = interpolateCurve( curve, progress );
 
 							} else if ( animationParameter !== undefined ) {
@@ -489,7 +490,14 @@ function Timeline() {
 			for ( let i = 0, l = active.length; i < l; i ++ ) {
 
 				const animation = active[ i ];
-				animation.effect.program.update( ( time - animation.start ) / ( animation.end - animation.start ), time - prevtime );
+				const duration = animation.end - animation.start;
+				const progress = duration > 0 ? ( time - animation.start ) / duration : 0;
+
+				if ( animation.effect.program && animation.effect.program.update ) {
+
+					animation.effect.program.update( progress, time - prevtime );
+
+				}
 
 			}
 
