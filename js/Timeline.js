@@ -44,33 +44,15 @@ function Timeline( editor ) {
 
 		event.preventDefault();
 
-		var initialX = event.offsetX;
-		var initialScale = scale;
-		var isZooming = false;
-
 		function onMouseMove( event ) {
 
-			if ( event.shiftKey ) {
-
-				isZooming = true;
-				var delta = event.offsetX - initialX;
-				var newScale = Math.max( 10, initialScale + delta );
-				scale = newScale;
-				signals.timelineZoomed.dispatch( newScale );
-
-			} else {
-
-				editor.setTime( ( event.offsetX + scroller.scrollLeft ) / scale );
-
-			}
+			editor.setTime( ( event.offsetX + scroller.scrollLeft ) / scale );
 
 		}
 
 		function onMouseUp( event ) {
 
-			if ( !isZooming ) {
-				onMouseMove( event );
-			}
+			onMouseMove( event );
 
 			document.removeEventListener( 'mousemove', onMouseMove );
 			document.removeEventListener( 'mouseup', onMouseUp );

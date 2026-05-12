@@ -250,6 +250,8 @@ Editor.prototype = {
 
 	setTime: function ( time ) {
 
+		if ( isNaN( time ) ) return;
+
 		location.hash = time.toFixed( 4 );
 
 		this.frame.player.currentTime = Math.max( 0, Math.min( this.frame.duration, time ) );
