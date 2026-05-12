@@ -58,6 +58,16 @@ const FRAME = {
 
 };
 
+FRAME.Parameters = {
+	Boolean: FRAME.Boolean,
+	Color: FRAME.Color,
+	Integer: FRAME.Integer,
+	Float: FRAME.Number,
+	String: FRAME.String,
+	Vector2: FRAME.Vector2,
+	Vector3: FRAME.Vector3
+};
+
 function Player() {
 
 	let audio = null;
@@ -736,8 +746,8 @@ class Frame {
 
 	fromJSON( json ) {
 
-		this.name = json.name;
-		this.duration = json.config.duration;
+		this.name = json.name || '';
+		this.duration = ( json.config && json.config.duration !== undefined ) ? json.config.duration : 120;
 
 		const scripts = this.scripts;
 		const effects = this.effects;

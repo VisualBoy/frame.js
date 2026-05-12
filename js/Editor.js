@@ -696,6 +696,10 @@ function fixLegacyJSON( json ) {
 			// console.warn( 'Editor: Converting legacy Code format:', data );
 			data.source = data.source.join( '\n' );
 
+		} else if ( data.source === undefined ) {
+
+			data.source = '';
+
 		}
 
 		scripts[ i ] = data;
@@ -719,6 +723,10 @@ function fixLegacyJSON( json ) {
 
 			//console.warn( 'Editor: Converting legacy Code format:', data );
 			data.source = data.source.join( '\n' );
+
+		} else if ( data.source === undefined ) {
+
+			data.source = '';
 
 		}
 
