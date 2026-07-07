@@ -71,7 +71,8 @@ function Editor() {
 
 		// timeline views
 		showAnimations: new Signal(),
-		showCurves: new Signal()
+		showCurves: new Signal(),
+		parameterSelected: new Signal()
 
 	};
 
@@ -167,6 +168,8 @@ Editor.prototype = {
 	},
 
 	setTime: function ( time ) {
+
+		if ( isNaN( time ) ) return;
 
 		location.hash = time.toFixed( 4 );
 
@@ -556,6 +559,14 @@ Editor.prototype = {
 						markdown += `    * ${ key }: ${ value }\n`;
 					}
 				}
+
+				const curves = Object.entries( animation.curves );
+				if ( curves.length > 0 ) {
+					markdown += '* curves:\n';
+					for ( const [ key, points ] of curves ) {
+						markdown += `    * ${ key }: ${ JSON.stringify( points ) }\n`;
+					}
+				}
 				markdown += '\n';
 			}
 		}
@@ -604,6 +615,10 @@ function fixLegacyJSON( json ) {
 			// console.warn( 'Editor: Converting legacy Code format:', data );
 			data.source = data.source.join( '\n' );
 
+		} else if ( data.source === undefined ) {
+
+			data.source = '';
+
 		}
 
 		scripts[ i ] = data;
@@ -627,6 +642,10 @@ function fixLegacyJSON( json ) {
 
 			//console.warn( 'Editor: Converting legacy Code format:', data );
 			data.source = data.source.join( '\n' );
+
+		} else if ( data.source === undefined ) {
+
+			data.source = '';
 
 		}
 

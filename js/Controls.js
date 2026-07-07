@@ -94,7 +94,8 @@ function Controls( editor ) {
 
 	function updatePlaybackRate() {
 
-		playbackRateText.setValue( player.playbackRate.toFixed( 1 ) + 'x' );
+		var rate = player.playbackRate || 0;
+		playbackRateText.setValue( rate.toFixed( 1 ) + 'x' );
 
 	}
 
@@ -110,6 +111,40 @@ function Controls( editor ) {
 
 	} );
 	row.add( fullscreenButton );
+
+	// Zoom
+
+	var zoomInButton = new UIButton( '+' );
+	zoomInButton.setWidth( '20px' );
+	zoomInButton.setHeight( '20px' );
+	zoomInButton.setFloat( 'right' );
+	zoomInButton.setMarginRight( '4px' );
+	zoomInButton.onClick( function () { signals.timelineZoomIn.dispatch(); } );
+	row.add( zoomInButton );
+
+	var zoomOutButton = new UIButton( '-' );
+	zoomOutButton.setWidth( '20px' );
+	zoomOutButton.setHeight( '20px' );
+	zoomOutButton.setFloat( 'right' );
+	zoomOutButton.setMarginRight( '4px' );
+	zoomOutButton.onClick( function () { signals.timelineZoomOut.dispatch(); } );
+	row.add( zoomOutButton );
+
+	var zoomResetButton = new UIButton( 'R' );
+	zoomResetButton.setWidth( '20px' );
+	zoomResetButton.setHeight( '20px' );
+	zoomResetButton.setFloat( 'right' );
+	zoomResetButton.setMarginRight( '4px' );
+	zoomResetButton.onClick( function () { signals.timelineZoomed.dispatch( 32 ); } );
+	row.add( zoomResetButton );
+
+	var zoomText = new UIText( '100%' );
+	zoomText.setWidth( '40px' );
+	zoomText.setFloat( 'right' );
+	zoomText.setMarginRight( '10px' );
+	zoomText.setColor( '#bbb' );
+	zoomText.setTextAlign( 'right' );
+	row.add( zoomText );
 
 	//
 
@@ -128,6 +163,12 @@ function Controls( editor ) {
 	signals.timeChanged.add( function ( value ) {
 
 		updateTimeText( value );
+
+	} );
+
+	signals.timelineZoomed.add( function ( scale ) {
+
+		zoomText.setValue( Math.round( ( scale / 32 ) * 100 ) + '%' );
 
 	} );
 

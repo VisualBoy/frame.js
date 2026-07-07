@@ -51,6 +51,13 @@ function SidebarAnimation( editor ) {
 
 		var name = new UIText( parameter.name ).setWidth( '90px' );
 		name.setTextDecoration( isDefined ? 'underline' : 'none' );
+		name.dom.style.cursor = 'pointer';
+		name.onClick( function () {
+
+			signals.parameterSelected.dispatch( animation, key );
+			signals.showCurves.dispatch( animation.id );
+
+		} );
 		parameterRow.add( name );
 
 		if ( parameter.isBoolean ) {

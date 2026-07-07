@@ -58,6 +58,16 @@ const FRAME = {
 
 };
 
+FRAME.Parameters = {
+	Boolean: FRAME.Boolean,
+	Color: FRAME.Color,
+	Integer: FRAME.Integer,
+	Float: FRAME.Number,
+	String: FRAME.String,
+	Vector2: FRAME.Vector2,
+	Vector3: FRAME.Vector3
+};
+
 function Player() {
 
 	let audio = null;
@@ -292,7 +302,8 @@ function Animation( data ) {
 	this.effect = data.effect;
 	this.enabled = data.enabled ?? true;
 	this.parameters = data.parameters ?? {};
-	
+	this.curves = data.curves ?? {}; // { parameterKey: [ { time: 0, value: 0, type: 'linear' }, ... ] }
+
 	let initialized = false;
 	
 	this.initialize = function () {
@@ -410,8 +421,15 @@ function Timeline() {
 					
 							const animationParameter = animationParameters[ key ];
 							const programParameter = programParameters[ key ];
-					
-							if ( animationParameter !== undefined ) {
+							const curve = animation.curves[ key ];
+
+							if ( curve !== undefined && curve.length > 0 ) {
+
+								const duration = animation.end - animation.start;
+								const progress = duration > 0 ? ( time - animation.start ) / duration : 0;
+								programParameter.value = interpolateCurve( curve, progress );
+
+							} else if ( animationParameter !== undefined ) {
 
 								programParameter.value = animationParameter;
 					
@@ -482,7 +500,14 @@ function Timeline() {
 			for ( let i = 0, l = active.length; i < l; i ++ ) {
 
 				const animation = active[ i ];
-				animation.effect.program.update( ( time - animation.start ) / ( animation.end - animation.start ), time - prevtime );
+				const duration = animation.end - animation.start;
+				const progress = duration > 0 ? ( time - animation.start ) / duration : 0;
+
+				if ( animation.effect.program && animation.effect.program.update ) {
+
+					animation.effect.program.update( progress, time - prevtime );
+
+				}
 
 			}
 
@@ -652,9 +677,20 @@ class Frame {
 					if ( line.startsWith( '    * ' ) ) {
 
 						const [ property, value ] = line.substring( 6 ).split( ': ' );
-						currentItem.parameters[ property ] = value;
+
+						if ( lines[ i - 1 ].includes( 'curves:' ) || ( currentItem._inCurvesSection ) ) {
+							currentItem.curves[ property ] = JSON.parse( value );
+							currentItem._inCurvesSection = true;
+						} else {
+							currentItem.parameters[ property ] = value;
+						}
 						continue;
 
+					}
+
+					if ( line.startsWith( '* curves:' ) ) {
+						currentItem._inCurvesSection = true;
+						continue;
 					}
 
 					break;
@@ -700,6 +736,34 @@ class Frame {
 
 		for ( const data of json.animations ) {
 			data.effect = effects[ data.effectId ];
+			delete data._inCurvesSection;
+			timeline.animations.push( new Animation( data ) );
+		}
+
+		this.timeline.sort();
+
+	}
+
+	fromJSON( json ) {
+
+		this.name = json.name || '';
+		this.duration = ( json.config && json.config.duration !== undefined ) ? json.config.duration : 120;
+
+		const scripts = this.scripts;
+		const effects = this.effects;
+		const timeline = this.timeline;
+
+		for ( const data of json.scripts ) {
+			scripts.push( new Code( data ) );
+		}
+
+		for ( const data of json.effects ) {
+			effects.push( new Code( data ) );
+		}
+
+		for ( const data of json.animations ) {
+			data.effect = effects[ data.effectId ];
+			delete data._inCurvesSection;
 			timeline.animations.push( new Animation( data ) );
 		}
 
@@ -894,5 +958,50 @@ WebAudio.getContext = function() {
 
 // TODO: Pass it to the effect
 window.WebAudio = WebAudio;
+
+function interpolateCurve( curve, t ) {
+
+	if ( curve.length === 0 ) return 0;
+	if ( t <= curve[ 0 ].time ) return curve[ 0 ].value;
+	if ( t >= curve[ curve.length - 1 ].time ) return curve[ curve.length - 1 ].value;
+
+	for ( let i = 0; i < curve.length - 1; i ++ ) {
+
+		const p1 = curve[ i ];
+		const p2 = curve[ i + 1 ];
+
+		if ( t >= p1.time && t <= p2.time ) {
+
+			const ratio = ( t - p1.time ) / ( p2.time - p1.time );
+
+			if ( p1.type === 'catmull' ) {
+
+				const p0 = curve[ Math.max( 0, i - 1 ) ];
+				const p3 = curve[ Math.min( curve.length - 1, i + 2 ) ];
+
+				const t2 = ratio * ratio;
+				const t3 = t2 * ratio;
+
+				return 0.5 * (
+					( 2 * p1.value ) +
+					( - p0.value + p2.value ) * ratio +
+					( 2 * p0.value - 5 * p1.value + 4 * p2.value - p3.value ) * t2 +
+					( - p0.value + 3 * p1.value - 3 * p2.value + p3.value ) * t3
+				);
+
+			} else {
+
+				// Linear
+				return p1.value + ( p2.value - p1.value ) * ratio;
+
+			}
+
+		}
+
+	}
+
+	return 0;
+
+}
 
 export { REVISION, Frame, Code, Animation };
